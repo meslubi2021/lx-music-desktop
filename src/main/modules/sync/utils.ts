@@ -1,26 +1,8 @@
 import { createCipheriv, createDecipheriv, publicEncrypt, privateDecrypt, constants } from 'node:crypto'
-import os, { networkInterfaces } from 'node:os'
+import os from 'node:os'
 import fs from 'node:fs'
 import zlib from 'node:zlib'
 import cp from 'node:child_process'
-
-
-export const getAddress = (): string[] => {
-  const nets = networkInterfaces()
-  const results: string[] = []
-  // console.log(nets)
-
-  for (const interfaceInfos of Object.values(nets)) {
-    if (!interfaceInfos) continue
-    // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
-    for (const interfaceInfo of interfaceInfos) {
-      if (interfaceInfo.family === 'IPv4' && !interfaceInfo.internal) {
-        results.push(interfaceInfo.address)
-      }
-    }
-  }
-  return results
-}
 
 
 // https://stackoverflow.com/a/75309339
@@ -31,10 +13,15 @@ export const getComputerName = () => {
       name = process.env.COMPUTERNAME
       break
     case 'darwin':
-      name = cp.execSync('scutil --get ComputerName').toString().trim()
+      try {
+        name = cp.execSync('scutil --get ComputerName').toString().trim()
+      } catch {}
       break
     case 'linux':
-      name = cp.execSync('hostnamectl --pretty').toString().trim()
+      // Don't fail even if hostnamectl is unavailable
+      try {
+        name = cp.execSync('hostnamectl --pretty').toString().trim()
+      } catch {}
       break
   }
   if (!name) name = os.hostname()

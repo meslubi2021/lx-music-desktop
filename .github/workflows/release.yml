@@ -5,21 +5,24 @@ on:
     branches:
       - master
 
+env:
+  IS_CI: 'true'
+
 jobs:
   # CheckCode:
   #   name: Lint Code
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Check out git repository
-  #       uses: actions/checkout@v3
+  #       uses: actions/checkout@v4
 
   #     - name: Install Node.js
-  #       uses: actions/setup-node@v3
+  #       uses: actions/setup-node@v4
   #       with:
-  #         node-version: '16'
+  #         node-version: 20
 
   #     - name: Cache file
-  #       uses: actions/cache@v3
+  #       uses: actions/cache@v4
   #       with:
   #         path: |
   #           node_modules
@@ -43,31 +46,24 @@ jobs:
     # needs: CheckCode
     steps:
       - name: Check out git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
+      - name: Get npm cache directory
+        shell: pwsh
+        run: echo "NPM_CACHE=$(npm config get cache)" >> $env:GITHUB_ENV
 
-      - name: Cache file
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            %APPDATA%\npm-cache
-            %LOCALAPPDATA%\electron\Cache
-            %LOCALAPPDATA%\electron-builder\Cache
-          key: ${{ runner.os }}-build-caches-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-
+      - name: Show Env
+        run: echo "${{ env.NPM_CACHE }}"
 
-      - name: Install Dependencies
-        run: |
-          npm ci
+      - name: Setup Node Env
+        env:
+          NPM_CACHE: ${{ env.NPM_CACHE }}
+        uses: ./.github/actions/setup
 
       - name: Build src code
-        run: npm run build
+        run: |
+          git status --porcelain
+          npm run build
 
       - name: Release package
         run: |
@@ -75,7 +71,46 @@ jobs:
           npm run publish:win:7z:arm64
           npm run publish:win:setup:arm64
           npm run publish:win:setup:x64
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BT_TOKEN: ${{ secrets.BT_TOKEN }}
+
+      - name: Generate file MD5
+        run: |
+          cd build
+          Get-FileHash *.exe,*.7z -Algorithm MD5 | Format-List
+
+
+  Windows_7:
+    name: Windows_7
+    runs-on: windows-latest
+    # needs: CheckCode
+    steps:
+      - name: Check out git repository
+        uses: actions/checkout@v4
+
+      - name: Get npm cache directory
+        shell: pwsh
+        run: echo "NPM_CACHE=$(npm config get cache)" >> $env:GITHUB_ENV
+
+      - name: Setup Node Env
+        env:
+          NPM_CACHE: ${{ env.NPM_CACHE }}
+        uses: ./.github/actions/setup
+
+      - name: Build src code
+        run: |
+          git status --porcelain
+          npm run build
+
+      - name: Prepare win7 electron env
+        run: |
           npm install electron@22
+          pip.exe install setuptools
+
+      - name: Release win7 package
+        run: |
+          npm run publish:win7:setup:x64
           npm run publish:win7:7z:x64
           npm run publish:win7:7z:x86
         env:
@@ -93,39 +128,36 @@ jobs:
     # needs: CheckCode
     steps:
       - name: Check out git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
-
-      - name: Cache file
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            $HOME/.cache/electron
-            $HOME/.cache/electron-builder
-            $HOME/.npm/_prebuilds
-          key: ${{ runner.os }}-build-caches-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-
-
-      - name: Install Dependencies
+      - name: Install python3 setuptools
         run: |
-          npm ci
+          mkdir ~/.venv
+          python3 -m venv ~/.venv
+          source ~/.venv/bin/activate
+          python3 -m pip install setuptools
+
+      - name: Get npm cache directory
+        shell: bash
+        run: echo "NPM_CACHE=$(npm config get cache)" >> $GITHUB_ENV
+
+      - name: Show Env
+        run: echo "${{ env.NPM_CACHE }}"
+      - name: Setup Node Env
+        env:
+          NPM_CACHE: ${{ env.NPM_CACHE }}
+        uses: ./.github/actions/setup
 
       - name: Build src code
-        run: npm run build
+        run: |
+          git status --porcelain
+          npm run build
 
       - name: Release package
         run: |
           npm run publish:mac:dmg
           npm run publish:mac:dmg:arm64
         env:
-          ELECTRON_CACHE: $HOME/.cache/electron
-          ELECTRON_BUILDERCACHE: $HOME/.cache/electron-builder
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           BT_TOKEN: ${{ secrets.BT_TOKEN }}
 
@@ -143,31 +175,23 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y rpm libarchive-tools
 
       - name: Check out git repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Install Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16'
+      - name: Get npm cache directory
+        shell: bash
+        run: echo "NPM_CACHE=$(npm config get cache)" >> $GITHUB_ENV
 
-      - name: Cache file
-        uses: actions/cache@v3
-        with:
-          path: |
-            node_modules
-            $HOME/.cache/electron
-            $HOME/.cache/electron-builder
-            $HOME/.npm/_prebuilds
-          key: ${{ runner.os }}-build-caches-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-
-
-      - name: Install Dependencies
-        run: |
-          npm ci
+      - name: Show Env
+        run: echo "${{ env.NPM_CACHE }}"
+      - name: Setup Node Env
+        env:
+          NPM_CACHE: ${{ env.NPM_CACHE }}
+        uses: ./.github/actions/setup
 
       - name: Build src code
-        run: npm run build
+        run: |
+          git status --porcelain
+          npm run build
 
       - name: Release package
         run: |

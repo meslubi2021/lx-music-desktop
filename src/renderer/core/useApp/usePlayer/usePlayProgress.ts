@@ -1,7 +1,7 @@
 import { onBeforeUnmount, watch } from '@common/utils/vueTools'
 import { formatPlayTime2, getRandom } from '@common/utils/common'
 import { throttle } from '@common/utils'
-import { setTaskBarProgress, savePlayInfo } from '@renderer/utils/ipc'
+import { savePlayInfo } from '@renderer/utils/ipc'
 import { onTimeupdate, getCurrentTime, getDuration, setCurrentTime, onVisibilityChange } from '@renderer/plugins/player'
 import { playProgress, setNowPlayTime, setMaxplayTime } from '@renderer/store/player/playProgress'
 import { musicInfo, playMusicInfo, playInfo } from '@renderer/store/player/state'
@@ -14,7 +14,6 @@ const delaySavePlayInfo = throttle(savePlayInfo, 2000)
 
 export default () => {
   let restorePlayTime = 0
-  let prevProgressStatus: Electron.ProgressBarOptions['mode'] = 'none'
   const mediaBuffer: {
     timeout: NodeJS.Timeout | null
     playTime: number
@@ -60,6 +59,7 @@ export default () => {
 
   const setProgress = (time: number, maxTime?: number) => {
     if (!musicInfo.id) return
+    if (maxTime != null) setMaxplayTime(maxTime)
     console.log('setProgress', time, maxTime)
     if (time > 0) restorePlayTime = time
     if (mediaBuffer.playTime) {
@@ -70,37 +70,21 @@ export default () => {
     setNowPlayTime(time)
     setCurrentTime(time)
 
-    if (maxTime != null) setMaxplayTime(maxTime)
-
     // if (!isPlay) audio.play()
   }
 
-  const handleSetTaskBarState = (progress: number, status?: Electron.ProgressBarOptions['mode']) => {
-    if (appSetting['player.isShowTaskProgess']) setTaskBarProgress(progress, status)
-  }
-
-  const handlePlay = () => {
-    prevProgressStatus = 'normal'
-    handleSetTaskBarState(playProgress.progress, prevProgressStatus)
-  }
   const handlePause = () => {
-    prevProgressStatus = 'paused'
-    handleSetTaskBarState(playProgress.progress, prevProgressStatus)
     clearBufferTimeout()
   }
 
   const handleStop = () => {
     setNowPlayTime(0)
     setMaxplayTime(0)
-    prevProgressStatus = 'none'
-    handleSetTaskBarState(playProgress.progress, prevProgressStatus)
   }
 
   const handleError = () => {
     restorePlayTime ||= getCurrentTime() // 记录出错的播放时间
     console.log('handleError')
-    prevProgressStatus = 'error'
-    handleSetTaskBarState(playProgress.progress, prevProgressStatus)
   }
 
   const handleLoadeddata = () => {
@@ -121,8 +105,8 @@ export default () => {
     }
   }
 
-  const handleCanplay = () => {
-    console.log('handleCanplay', mediaBuffer.playTime, restorePlayTime)
+  const handlePlaying = () => {
+    console.log('handlePlaying', mediaBuffer.playTime, restorePlayTime)
     clearBufferTimeout()
     if (mediaBuffer.playTime) {
       let playTime = mediaBuffer.playTime
@@ -157,10 +141,6 @@ export default () => {
     }
   }
 
-  watch(() => playProgress.progress, (newValue, oldValue) => {
-    if (newValue.toFixed(2) === oldValue.toFixed(2)) return
-    handleSetTaskBarState(newValue, prevProgressStatus)
-  })
   watch(() => playProgress.nowPlayTime, (newValue, oldValue) => {
     if (Math.abs(newValue - oldValue) > 2) window.app_event.activePlayProgressTransition()
     if (appSetting['player.isSavePlayTime'] && !playMusicInfo.isTempPlay) {
@@ -183,14 +163,14 @@ export default () => {
     }
   })
 
-  window.app_event.on('play', handlePlay)
+  // window.app_event.on('play', handlePlay)
   window.app_event.on('pause', handlePause)
   window.app_event.on('stop', handleStop)
   window.app_event.on('error', handleError)
   window.app_event.on('setProgress', setProgress)
   // window.app_event.on(eventPlayerNames.restorePlay, handleRestorePlay)
   window.app_event.on('playerLoadeddata', handleLoadeddata)
-  window.app_event.on('playerCanplay', handleCanplay)
+  window.app_event.on('playerPlaying', handlePlaying)
   window.app_event.on('playerWaiting', handleWating)
   window.app_event.on('playerEmptied', handleEmpied)
   window.app_event.on('musicToggled', handleSetPlayInfo)
@@ -213,14 +193,14 @@ export default () => {
   onBeforeUnmount(() => {
     rOnTimeupdate()
     rVisibilityChange()
-    window.app_event.off('play', handlePlay)
+    // window.app_event.off('play', handlePlay)
     window.app_event.off('pause', handlePause)
     window.app_event.off('stop', handleStop)
     window.app_event.off('error', handleError)
     window.app_event.off('setProgress', setProgress)
     // window.app_event.off(eventPlayerNames.restorePlay, handleRestorePlay)
     window.app_event.off('playerLoadeddata', handleLoadeddata)
-    window.app_event.off('playerCanplay', handleCanplay)
+    window.app_event.off('playerPlaying', handlePlaying)
     window.app_event.off('playerWaiting', handleWating)
     window.app_event.off('playerEmptied', handleEmpied)
     window.app_event.off('musicToggled', handleSetPlayInfo)

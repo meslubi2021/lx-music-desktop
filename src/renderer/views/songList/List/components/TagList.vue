@@ -1,6 +1,6 @@
 <template>
   <div :class="[$style.tagList, {[$style.active]: popupVisible}]">
-    <div ref="dom_btn" :class="$style.label" @click="handleShow">
+    <div ref="dom_btn" :class="$style.label" @click.stop="handleShow">
       <span>{{ tagName }}</span>
       <div :class="$style.icon">
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" xlink="http://www.w3.org/1999/xlink" height="100%" viewBox="0 0 451.847 451.847" space="preserve">
@@ -20,25 +20,34 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { watch, shallowReactive, ref, onMounted, onBeforeUnmount, computed, reactive } from '@common/utils/vueTools'
 import { setTags, getTags } from '@renderer/store/songList/action'
-import { tags, type TagInfoTypeItem } from '@renderer/store/songList/state'
+import { tags } from '@renderer/store/songList/state'
 import { useRouter, useRoute } from '@common/utils/vueRouter'
 import { useI18n } from '@renderer/plugins/i18n'
 
-const props = defineProps<{
-  source: LX.OnlineSource
-  tagId: string
-  sortId?: string
-}>()
+const props = defineProps({
+  source: {
+    type: String,
+    required: true,
+  },
+  tagId: {
+    type: String,
+    required: true,
+  },
+  sortId: {
+    type: [String, undefined],
+    default: undefined,
+  },
+})
 
 const router = useRouter()
 const route = useRoute()
 const t = useI18n()
 
-const list = shallowReactive<TagInfoTypeItem[]>([])
-const handleToggleTag = (id: string) => {
+const list = shallowReactive([])
+const handleToggleTag = (id) => {
   void router.replace({
     path: route.path,
     query: {
@@ -77,21 +86,19 @@ const popupStyle = reactive({
 const setTagPopupWidth = () => {
   window.setTimeout(() => {
     const dom_view = document.getElementById('view')
-    popupStyle.width = dom_view!.clientWidth * 0.96 + 'px'
-    popupStyle.maxHeight = dom_view!.clientHeight * 0.65 + 'px'
+    popupStyle.width = dom_view.clientWidth * 0.96 + 'px'
+    popupStyle.maxHeight = dom_view.clientHeight * 0.65 + 'px'
   }, 50)
 }
 
 const dom_btn = ref<HTMLElement | null>(null)
 const popupVisible = ref(false)
 const handleShow = () => popupVisible.value = !popupVisible.value
-const handleHide = (evt?: MouseEvent) => {
+const handleHide = (evt) => {
   // if (e && e.target.parentNode != this.$refs.dom_popup && this.show) return this.show = false
   // console.log(this.$refs)
-  if (evt && (evt.target == dom_btn.value || dom_btn.value?.contains(evt.target as HTMLElement))) return
-  setTimeout(() => {
-    popupVisible.value = false
-  }, 50)
+  if (evt && (evt.target == dom_btn.value || dom_btn.value?.contains(evt.target))) return
+  popupVisible.value = false
 }
 
 

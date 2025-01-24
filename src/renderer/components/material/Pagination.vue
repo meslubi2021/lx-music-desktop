@@ -51,6 +51,7 @@
 </template>
 
 <script>
+import { computed } from '@common/utils/vueTools'
 
 export default {
   props: {
@@ -72,29 +73,34 @@ export default {
     },
   },
   emits: ['btn-click'],
-  computed: {
-    maxPage() {
-      return Math.ceil(this.count / this.limit) || 1
-    },
-    pageEvg() {
-      return Math.floor(this.btnLength / 2)
-    },
-    pages() {
-      if (this.maxPage <= this.btnLength) return Array.from({ length: this.maxPage }, (_, i) => i + 1)
-      let start =
-        this.page - this.pageEvg > 1
-          // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
-          ? this.maxPage - this.page < this.pageEvg + 1
-            ? this.maxPage - (this.btnLength - 1)
-            : this.page - this.pageEvg
-          : 1
-      return Array.from({ length: this.btnLength }, (_, i) => start + i)
-    },
-  },
-  methods: {
-    handleClick(page) {
-      this.$emit('btn-click', page)
-    },
+  setup(props, { emit }) {
+    const maxPage = computed(() => {
+      return Math.ceil(props.count / props.limit) || 1
+    })
+    const pageEvg = computed(() => {
+      return Math.floor(props.btnLength / 2)
+    })
+    const pages = computed(() => {
+      if (maxPage.value <= props.btnLength) return Array.from({ length: maxPage.value }, (_, i) => i + 1)
+      let start = props.page - pageEvg.value > 1
+        // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
+        ? maxPage.value - props.page < pageEvg.value + 1
+          ? maxPage.value - (props.btnLength - 1)
+          : props.page - pageEvg.value
+        : 1
+      return Array.from({ length: props.btnLength }, (_, i) => start + i)
+    })
+
+    const handleClick = (page) => {
+      emit('btn-click', page)
+    }
+
+    return {
+      maxPage,
+      pageEvg,
+      pages,
+      handleClick,
+    }
   },
 }
 </script>
@@ -120,7 +126,7 @@ export default {
       // border-radius: .3125rem;
       transition: 0.4s ease;
       transition-property: all;
-      line-height: 1;
+      line-height: 1.2;
       display: flex;
       // border-right: none;
       svg {
@@ -130,7 +136,7 @@ export default {
       button {
         display: block;
         padding: 7px 12px;
-        line-height: 1;
+        line-height: 1.2;
         color: var(--color-button-font);
         font-size: 13px;
       }

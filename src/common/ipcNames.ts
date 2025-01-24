@@ -55,9 +55,11 @@ const modules = {
     show_save_dialog: 'show_save_dialog',
     show_select_dialog: 'show_select_dialog',
     show_dialog: 'show_dialog',
+    open_dir_in_explorer: 'open_dir_in_explorer',
     open_dev_tools: 'open_dev_tools',
+    set_power_save_blocker: 'set_power_save_blocker',
 
-    progress: 'progress',
+    player_status: 'player_status',
     change_tray: 'change_tray',
     quit_update: 'quit_update',
     update_check: 'update_check',
@@ -132,6 +134,7 @@ const modules = {
     clear_music_url: 'clear_music_url',
     get_music_url_count: 'get_music_url_count',
 
+    open_api_action: 'open_api_action',
     sync_action: 'sync_action',
     sync_get_server_devices: 'sync_get_server_devices',
     sync_remove_server_device: 'sync_remove_server_device',

@@ -15,5 +15,20 @@ declare namespace LX {
     interface LyricInfo extends LX.Music.LyricInfo {
       rawlrcInfo: LX.Music.LyricInfo
     }
+
+    interface Status {
+      status: 'playing' | 'paused' | 'error' | 'stoped'
+      name: string
+      singer: string
+      albumName: string
+      picUrl: string
+      progress: number
+      duration: number
+      playbackRate: number
+      lyricLineText: string
+      lyricLineAllText: string
+      lyric: string
+      collect: boolean
+    }
   }
 }

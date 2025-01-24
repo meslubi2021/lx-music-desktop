@@ -1,7 +1,7 @@
 declare namespace LX {
   namespace UserApi {
     type UserApiSourceInfoType = 'music'
-    type UserApiSourceInfoActions = 'musicUrl'
+    type UserApiSourceInfoActions = 'musicUrl' | 'lyric' | 'pic'
 
     interface UserApiSourceInfo {
       name: string
@@ -13,14 +13,19 @@ declare namespace LX {
     type UserApiSources = Record<LX.Source, UserApiSourceInfo>
 
 
-    interface UserApiInfo {
+    interface UserApiInfoFull {
       id: string
       name: string
       description: string
       script: string
       allowShowUpdateAlert: boolean
+      author?: string
+      homepage?: string
+      version?: string
       sources?: UserApiSources
     }
+
+    type UserApiInfo = Omit<UserApiInfoFull, 'script'>
 
     interface UserApiStatus {
       status: boolean

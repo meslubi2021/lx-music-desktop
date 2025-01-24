@@ -5,7 +5,7 @@ import { STORE_NAMES, URL_SCHEME_RXP } from '@common/constants'
 import defaultSetting from '@common/defaultSetting'
 import defaultHotKey from '@common/defaultHotKey'
 import { migrateDataJson, migrateHotKey, migrateUserApi, parseDataFile } from './migrate'
-import { nativeTheme } from 'electron'
+import { nativeTheme, powerSaveBlocker } from 'electron'
 import { joinPath } from '@common/utils/nodejs'
 import themes from '@common/theme/index.json'
 
@@ -121,7 +121,7 @@ export const updateSetting = (setting?: Partial<LX.AppSetting>, isInit: boolean 
 
   result.setting.version = defaultSetting.version
 
-  electronStore_config.set({ version: result.setting.version, setting: result.setting })
+  electronStore_config.override({ version: result.setting.version, setting: result.setting })
   return result
 }
 
@@ -178,8 +178,8 @@ export const initHotKey = async() => {
   }
 
   return {
-    local: localConfig as LX.HotKeyConfig,
-    global: globalConfig as LX.HotKeyConfig,
+    local: localConfig!,
+    global: globalConfig!,
   }
 }
 
@@ -276,7 +276,49 @@ export const getTheme = () => {
       id: global.lx.appSetting['theme.id'],
       name: theme.name,
       isDark: theme.isDark,
+      isDarkFont: theme.isDarkFont,
       colors,
     },
   }
+}
+
+let powerSaveBlockerId: number | null = null
+export const setPowerSaveBlocker = (enabled: boolean) => {
+  let isEnabled = powerSaveBlockerId != null && powerSaveBlocker.isStarted(powerSaveBlockerId)
+  if (enabled) {
+    if (isEnabled) return
+    powerSaveBlockerId = powerSaveBlocker.start('prevent-app-suspension')
+  } else {
+    if (!isEnabled) return
+    powerSaveBlocker.stop(powerSaveBlockerId!)
+    powerSaveBlockerId = null
+  }
+}
+
+
+let envProxy: null | { host: string, port: number } = null
+export const getProxy = () => {
+  if (global.lx.appSetting['network.proxy.enable'] && global.lx.appSetting['network.proxy.host']) {
+    return {
+      host: global.lx.appSetting['network.proxy.host'],
+      port: parseInt(global.lx.appSetting['network.proxy.port'] || '80'),
+    }
+  }
+  if (envProxy) {
+    return {
+      host: envProxy.host,
+      port: envProxy.port,
+    }
+  } else {
+    const envProxyStr = envParams.cmdParams['proxy-server']
+    if (envProxyStr && typeof envProxyStr == 'string') {
+      const [host, port = ''] = envProxyStr.split(':')
+      return envProxy = {
+        host,
+        port: parseInt(port || '80'),
+      }
+    }
+  }
+
+  return null
 }

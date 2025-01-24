@@ -16,9 +16,10 @@ const rendererLyricConfig = require('./renderer-lyric/webpack.config.dev')
 const rendererScriptConfig = require('./renderer-scripts/webpack.config.dev')
 const { Arch } = require('electron-builder')
 const replaceLib = require('./build-before-pack')
+const treeKill = require('tree-kill')
+const { debounce } = require('./utils')
 
 let electronProcess = null
-let manualRestart = false
 let hotMiddlewareRenderer
 let hotMiddlewareRendererLyric
 
@@ -132,9 +133,11 @@ function startRendererScripts() {
 }
 
 function startMain() {
+  let firstRun = true
   return new Promise((resolve, reject) => {
     // mainConfig.entry.main = [path.join(__dirname, '../src/main/index.dev.js')].concat(mainConfig.entry.main)
     // mainConfig.mode = 'development'
+    const runElectronDelay = debounce(startElectron, 200)
     const compiler = webpack(mainConfig)
 
     compiler.hooks.watchRun.tapAsync('watch-run', (compilation, done) => {
@@ -146,23 +149,19 @@ function startMain() {
     compiler.watch({}, (err, stats) => {
       if (err) {
         console.log(err)
+        reject(err)
         return
       }
 
       // logStats('Main', stats)
-
-      if (electronProcess && electronProcess.kill) {
-        manualRestart = true
-        process.kill(electronProcess.pid)
-        electronProcess = null
-        startElectron()
-
-        setTimeout(() => {
-          manualRestart = false
-        }, 5000)
+      if (electronProcess) {
+        electronProcess.removeAllListeners()
+        treeKill(electronProcess.pid)
       }
-
-      resolve()
+      if (firstRun) {
+        firstRun = false
+        resolve()
+      } else runElectronDelay()
     })
   })
 }
@@ -191,7 +190,7 @@ function startElectron() {
   })
 
   electronProcess.on('close', () => {
-    if (!manualRestart) process.exit()
+    process.exit()
   })
 }
 

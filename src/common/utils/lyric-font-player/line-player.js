@@ -224,4 +224,16 @@ export default class LinePlayer {
     this.extendedLyrics = extendedLyrics
     this._init()
   }
+
+  setDisabledAutoPause(disabledAutoPause) {
+    if (disabledAutoPause) {
+      timeoutTools.nextTick = (handler) => {
+        return setTimeout(handler, 20)
+      }
+      timeoutTools.cancelNextTick = clearTimeout.bind(global)
+    } else {
+      timeoutTools.nextTick = window.requestAnimationFrame.bind(window)
+      timeoutTools.cancelNextTick = window.cancelAnimationFrame.bind(window)
+    }
+  }
 }

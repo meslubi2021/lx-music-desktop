@@ -1,9 +1,12 @@
 const names = {
+  initEnv: '',
   init: '',
   request: '',
   response: '',
   openDevTools: '',
   showUpdateAlert: '',
+  getProxy: '',
+  proxyUpdate: '',
 }
 
 

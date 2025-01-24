@@ -1,7 +1,7 @@
 import { watch } from '@common/utils/vueTools'
 import { isFullscreen, proxy, sync, windowSizeList } from '@renderer/store'
 import { appSetting } from '@renderer/store/setting'
-import { sendSyncAction, setTaskBarProgress, setWindowSize } from '@renderer/utils/ipc'
+import { sendSyncAction, setWindowSize } from '@renderer/utils/ipc'
 import { setLanguage } from '@root/lang'
 import { setUserApi } from '../apiSource'
 // import { applyTheme, getThemes } from '@renderer/store/utils'
@@ -27,7 +27,7 @@ export default () => {
   })
 
   watch(() => appSetting['common.font'], (val) => {
-    document.documentElement.style.fontFamily = /\s/.test(val) ? `"${val}"` : val
+    document.documentElement.style.fontFamily = val
   }, {
     immediate: true,
   })
@@ -105,18 +105,5 @@ export default () => {
   })
   watch(() => appSetting['network.proxy.port'], port => {
     proxy.port = port
-  })
-  watch(() => appSetting['network.proxy.username'], username => {
-    proxy.username = username
-  })
-  watch(() => appSetting['network.proxy.password'], password => {
-    proxy.password = password
-  })
-
-  watch(() => appSetting['player.isShowTaskProgess'], val => {
-    if (val) return
-    setTimeout(() => {
-      setTaskBarProgress(-1, 'normal')
-    })
   })
 }

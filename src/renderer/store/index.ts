@@ -11,8 +11,6 @@ export const proxy: {
   enable: boolean
   host: string
   port: string
-  username: string
-  password: string
 
   envProxy?: {
     host: string
@@ -22,8 +20,6 @@ export const proxy: {
   enable: false,
   host: '',
   port: '',
-  username: '',
-  password: '',
 }
 export const sync: {
   enable: boolean
@@ -77,13 +73,22 @@ export const sync: {
   },
 })
 
+export const openAPI = reactive({
+  address: '',
+  message: '',
+})
+
 
 export const windowSizeActive = computed(() => {
   return windowSizeList.find(i => i.id === appSetting['common.windowSizeId']) ?? windowSizeList[0]
 })
 
+export const getSourceI18nPrefix = () => {
+  return appSetting['common.sourceNameType'] == 'real' ? 'source_' : 'source_alias_'
+}
+
 export const sourceNames = computed(() => {
-  const prefix = appSetting['common.sourceNameType'] == 'real' ? 'source_' : 'source_alias_'
+  const prefix = getSourceI18nPrefix()
   const sourceNames: Record<LX.OnlineSource | 'all', string> = {
     kw: 'kw',
     tx: 'tx',

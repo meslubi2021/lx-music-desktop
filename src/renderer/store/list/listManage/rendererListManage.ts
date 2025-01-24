@@ -68,7 +68,7 @@ export const updateUserListPosition = async(data: LX.List.ListActionUpdatePositi
  */
 export const getListMusics = async(listId: string | null): Promise<LX.Music.MusicInfo[]> => {
   if (!listId) return []
-  if (allMusicList.has(listId)) return allMusicList.get(listId) as LX.Music.MusicInfo[]
+  if (allMusicList.has(listId)) return allMusicList.get(listId)!
   const list = await rendererInvoke<string, LX.Music.MusicInfo[]>(PLAYER_EVENT_NAME.list_music_get, listId)
   return setMusicList(listId, list)
 }
@@ -206,9 +206,8 @@ export const registerListAction = (appSetting: LX.AppSetting, onListChanged: (li
     if (updatedListIds.length) onListChanged(updatedListIds)
   }
   const list_music_update = ({ params: musicInfos }: LX.IpcRendererEventParams<LX.List.ListActionMusicUpdate>) => {
-    listMusicUpdateInfo(musicInfos)
-    // const updatedListIds = listMusicUpdateInfo(musicInfos)
-    // if (updatedListIds.length) onListChanged(updatedListIds)
+    const updatedListIds = listMusicUpdateInfo(musicInfos)
+    if (updatedListIds.length) onListChanged(updatedListIds)
   }
   const list_music_update_position = ({ params: { listId, position, ids } }: LX.IpcRendererEventParams<LX.List.ListActionMusicUpdatePosition>) => {
     void listMusicUpdatePosition(listId, position, ids).then(updatedListIds => {

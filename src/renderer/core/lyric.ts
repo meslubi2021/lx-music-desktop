@@ -87,6 +87,7 @@ export const init = () => {
     onPlay(line, text) {
       setText(text, Math.max(line, 0))
       setStatusText(text)
+      window.app_event.lyricLinePlay(text, line)
       // console.log(line, text)
     },
     onSetLyric(lines, offset) { // listening lyrics seting event
@@ -183,6 +184,20 @@ export const setLyric = () => {
       lrc.play(time)
     })
   }
+}
+
+export const setDisabledAutoPause = (disabledAutoPause: boolean) => {
+  lrc.setDisabledAutoPause(disabledAutoPause)
+}
+
+let sources = new Map<string, boolean>()
+let prevDisabled = false
+export const setDisableAutoPauseBySource = (disabled: boolean, source: string) => {
+  sources.set(source, disabled)
+  const currentDisabled = Array.from(sources.values()).some(e => e)
+  if (prevDisabled == currentDisabled) return
+  prevDisabled = currentDisabled
+  setDisabledAutoPause(currentDisabled)
 }
 
 

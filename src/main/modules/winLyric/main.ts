@@ -119,6 +119,7 @@ export const createWindow = () => {
     useContentSize: true,
     frame: false,
     transparent: true,
+    hasShadow: false,
     // enableRemoteModule: false,
     // icon: join(global.__static, isWin ? 'icons/256x256.ico' : 'icons/512x512.png'),
     resizable: false,
@@ -144,6 +145,7 @@ export const createWindow = () => {
 
   winEvent()
   // browserWindow.webContents.openDevTools()
+  global.lx.event_app.desktop_lyric_window_created(browserWindow)
 }
 export const isExistWindow = (): boolean => !!browserWindow
 

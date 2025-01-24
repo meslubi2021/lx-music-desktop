@@ -6,16 +6,19 @@ module.exports = {
     'del',
     'comlink',
     'vue',
+    'image-size',
+    'message2call',
     '@types/ws',
+    'eslint',
+    'electron-debug',
     // 'eslint-config-standard-with-typescript',
-    'typescript', // https://github.com/microsoft/TypeScript/pull/54567
+    // 'typescript', // https://github.com/microsoft/TypeScript/pull/54567
   ],
 
   // target: 'newest',
   // filter: [
   //   'electron-builder',
   //   'electron-updater',
-  //   'electron-log',
   // ],
 
   // target: 'patch',
@@ -26,5 +29,7 @@ module.exports = {
   // target: 'minor',
   // filter: [
   //   'electron',
+  //   'eslint',
+  //   'electron-debug',
   // ],
 }

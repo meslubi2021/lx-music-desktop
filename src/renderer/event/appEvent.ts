@@ -11,8 +11,8 @@ import Event from './Event'
 // }
 
 export class AppEvent extends Event {
-  configUpdate() {
-    this.emit('configUpdate')
+  configUpdate(setting: Partial<LX.AppSetting>) {
+    this.emit('configUpdate', setting)
   }
 
   focus() {
@@ -124,6 +124,10 @@ export class AppEvent extends Event {
     this.emit('playerWaiting')
   }
 
+  playerDeviceChanged() {
+    this.emit('playerDeviceChanged')
+  }
+
   // 激活进度条动画事件
   activePlayProgressTransition() {
     this.emit('activePlayProgressTransition')
@@ -142,6 +146,11 @@ export class AppEvent extends Event {
   // 更新歌词偏移
   lyricOffsetUpdate() {
     this.emit('lyricOffsetUpdate')
+  }
+
+  // 歌词行播放
+  lyricLinePlay(text: string, line: number) {
+    this.emit('lyricLinePlay', text, line)
   }
 
   // 我的列表改变事件

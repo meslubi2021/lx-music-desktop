@@ -5,16 +5,13 @@ import { type DislikeType, type AppType, type ListType } from '@main/event'
 import { type DBSeriveTypes } from '@main/worker/utils'
 
 interface Lx {
+  inited: boolean
   appSetting: LX.AppSetting
   hotKey: {
     enable: boolean
     config: LX.HotKeyConfigAll
     state: LX.HotKeyState
   }
-  /**
-   * 是否红绿灯关闭
-   */
-  isTrafficLightClose: boolean
   /**
    * 是否跳过托盘退出
    */
@@ -30,6 +27,7 @@ interface Lx {
     dbService: DBSeriveTypes
   }
   theme: LX.ThemeSetting
+  player_status: LX.Player.Status
 }
 
 declare global {

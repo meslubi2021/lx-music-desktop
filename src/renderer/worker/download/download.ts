@@ -55,7 +55,7 @@ export const createDownloadTasks = (
   // }
 }
 
-const createTask = async(downloadInfo: LX.Download.ListItem, savePath: string, skipExistFile: boolean) => {
+const createTask = async(downloadInfo: LX.Download.ListItem, savePath: string, skipExistFile: boolean, proxy?: { host: string, port: number }) => {
   // console.log('createTask', downloadInfo, savePath)
   // 开始任务
   /* commit('onStart', downloadInfo)
@@ -103,6 +103,7 @@ const createTask = async(downloadInfo: LX.Download.ListItem, savePath: string, s
     path: savePath,
     fileName: downloadInfo.metadata.fileName,
     method: 'get',
+    proxy,
     onCompleted() {
       // if (downloadInfo.progress.progress != '100.00') {
       //   delete.get(downloadInfo.id)?
@@ -114,7 +115,7 @@ const createTask = async(downloadInfo: LX.Download.ListItem, savePath: string, s
       console.log('on complate')
     },
     onError(err: any) {
-      console.log(err)
+      console.error(err)
       if (err.code == 'EPERM') {
         sendAction(downloadInfo.id, {
           action: 'error',
@@ -157,8 +158,9 @@ const createTask = async(downloadInfo: LX.Download.ListItem, savePath: string, s
         sendAction(downloadInfo.id, { action: 'refreshUrl' })
       } else {
         console.log('Download failed, Attempting Retry')
-        void dls.get(downloadInfo.id)?.start()
-        console.log('正在重试')
+        setTimeout(() => {
+          void dls.get(downloadInfo.id)?.start()
+        }, 1000)
       }
     },
     onFail(response) {
@@ -205,6 +207,7 @@ const createTask = async(downloadInfo: LX.Download.ListItem, savePath: string, s
       downloadInfo.downloaded = status.downloaded
       downloadInfo.progress = status.progress
       downloadInfo.speed = status.speed
+      downloadInfo.writeQueue = status.writeQueue
       sendAction(downloadInfo.id, { action: 'progress', data: status })
       // console.log(status)
     },
@@ -239,7 +242,7 @@ export const updateUrl = (id: string, url: string) => {
   })
 }
 
-export const startTask = async(downloadInfo: LX.Download.ListItem, savePath: string, skipExistFile: boolean, callback: (action: LX.Download.DownloadTaskActions) => void) => {
+export const startTask = async(downloadInfo: LX.Download.ListItem, savePath: string, skipExistFile: boolean, callback: (action: LX.Download.DownloadTaskActions) => void, proxy?: { host: string, port: number }) => {
   await pauseTask(downloadInfo.id)
 
   tasks.set(downloadInfo.id, downloadInfo)
@@ -274,7 +277,7 @@ export const startTask = async(downloadInfo: LX.Download.ListItem, savePath: str
       // await dispatch('startTask')
     }
   } else {
-    await createTask(downloadInfo, savePath, skipExistFile)
+    await createTask(downloadInfo, savePath, skipExistFile, proxy)
     // await dispatch('handleStartTask', downloadInfo)
   }
 }

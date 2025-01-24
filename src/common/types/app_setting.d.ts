@@ -1,4 +1,4 @@
-import type { I18n } from '@root/lang/i18n'
+import type { I18n } from '../../lang/i18n'
 
 declare global {
 
@@ -89,19 +89,30 @@ declare global {
       'player.togglePlayMethod': 'listLoop' | 'random' | 'list' | 'singleLoop' | 'none'
 
       /**
-       * 是否优先播放320k音质
+       * 优先播放的音质
        */
-      'player.highQuality': boolean
+      'player.playQuality': LX.Quality
 
       /**
        * 是否显示任务栏进度条
        */
       'player.isShowTaskProgess': boolean
 
+
+      /**
+       * 是否将歌词显示在状态栏
+       */
+      'player.isShowStatusBarLyric': boolean
+
       /**
        * 音量大小
        */
       'player.volume': number
+
+      /**
+       * 播放歌曲时是否阻止电脑休眠
+       */
+      'player.powerSaveBlocker': boolean
 
       /**
        * 是否静音
@@ -117,6 +128,11 @@ declare global {
        * 是否自动调整音频的音高以补偿对播放速率设置所做的更改
        */
       'player.preservesPitch': boolean
+
+      /**
+       * 使用设备能处理的最大声道数输出音频
+       */
+      'player.isMaxOutputChannelCount': boolean
 
       /**
        * 音频输出设备id
@@ -282,6 +298,11 @@ declare global {
        * 播放详情页-歌词对齐方式
        */
       'playDetail.style.align': 'center' | 'left' | 'right'
+
+      /**
+       * 播放详情页-是否延迟桌面歌词滚动
+       */
+      'playDetail.isDelayScroll': boolean
 
 
       /**
@@ -575,16 +596,6 @@ declare global {
       'network.proxy.port': string
 
       /**
-       * 代理服务器用户名
-       */
-      'network.proxy.username': string
-
-      /**
-       * 代理服务器密码
-       */
-      'network.proxy.password': string
-
-      /**
        * 是否启用托盘
        */
       'tray.enable': boolean
@@ -623,6 +634,22 @@ declare global {
        * 同步服务地址
        */
       'sync.client.host': string
+
+
+      /**
+       * 是否启用开放API服务
+       */
+      'openAPI.enable': boolean
+
+      /**
+       * API服务端口号
+       */
+      'openAPI.port': '23330' | string
+
+      /**
+       * 是否绑定到局域网
+       */
+      'openAPI.bindLan': boolean
 
       /**
        * 是否在离开搜索界面时自动清空搜索框

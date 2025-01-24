@@ -172,11 +172,13 @@ export const userApiRequestCancel = (requestKey: LX.UserApi.UserApiRequestCancel
 //   }
 // }
 
-export const setTaskBarProgress = (progress: number, mode?: Electron.ProgressBarOptions['mode']) => {
-  rendererSend<LX.Player.ProgressBarOptions>(WIN_MAIN_RENDERER_EVENT_NAME.progress, {
-    progress: progress < 0 ? progress : Math.max(0.01, progress),
-    mode: mode ?? 'normal',
-  })
+export const sendPlayerStatus = (status: Partial<LX.Player.Status>) => {
+  rendererSend<Partial<LX.Player.Status>>(WIN_MAIN_RENDERER_EVENT_NAME.player_status, status)
+}
+
+
+export const sendOpenAPIAction = async(action: LX.OpenAPI.Actions) => {
+  return rendererInvoke<LX.OpenAPI.Actions, LX.OpenAPI.Status>(WIN_MAIN_RENDERER_EVENT_NAME.open_api_action, action)
 }
 
 export const saveLastStartInfo = (version: string) => {
@@ -494,6 +496,12 @@ export const openSaveDir = async(options: Electron.SaveDialogOptions) => {
   return rendererInvoke<Electron.SaveDialogOptions, Electron.SaveDialogReturnValue>(WIN_MAIN_RENDERER_EVENT_NAME.show_save_dialog, options)
 }
 
+/**
+ * 在资源管理器中定位文件
+ */
+export const openDirInExplorer = async(path: string) => {
+  return rendererSend<string>(WIN_MAIN_RENDERER_EVENT_NAME.open_dir_in_explorer, path)
+}
 
 /**
  * 获取缓存大小
@@ -680,6 +688,12 @@ export const showHideWindowToggle = () => {
  */
 export const focusWindow = () => {
   rendererSend(WIN_MAIN_RENDERER_EVENT_NAME.focus)
+}
+/**
+ * 是否启用电源锁
+ */
+export const setPowerSaveBlocker = (enabled: boolean) => {
+  rendererSend<boolean>(WIN_MAIN_RENDERER_EVENT_NAME.set_power_save_blocker, enabled)
 }
 
 /**

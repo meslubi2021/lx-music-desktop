@@ -10,7 +10,10 @@
           <use xlink:href="#icon-check-true" />
         </svg>
       </div>
-      <span v-if="label != null" :class="$style.label" v-text="label" />
+      <slot v-if="label == null" />
+      <span v-else :class="$style.label">
+        {{ label }}
+      </span>
     </label>
   </div>
 </template>
@@ -44,7 +47,7 @@ export default {
     },
     label: {
       type: String,
-      required: true,
+      default: undefined,
     },
     disabled: {
       type: Boolean,
